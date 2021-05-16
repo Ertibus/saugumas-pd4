@@ -1,5 +1,4 @@
 # 4 praktinė užduotis <br /> Sukurti slaptažodžių valdymo sistemą. 
-
 ## Privalomos slaptažodžių valdymo sistemos funkcijos:
 
 * Paleidus sistemą pirmą kartą sukuriamas .csv arba .txt failas. Išjungiant sistemą šis failas turi būti užšifruojamas AES algoritmu. Kitą kartą paleidus sistemą failas yra dešifruojamas. (4 taškai)
@@ -15,3 +14,8 @@
 * Atsitiktinio slaptažodžio generavimo funkcija (panaudojama kuriant naują slaptažodį). (2 taškai)
 * Papildoma funkcija slaptažodžio paieškai pagal pavadinimą: suradus tinkamą slaptažodį jis iškart nerodomas, pateikiamas tik jo užšifruotas rezultatas. Paspaudus mygtuką rodyti parodomas slaptažodis. (2 taškai)
 * Mygtukas galintis nukopijuoti slaptažodį į iškarpinę. (2 taškai) 
+
+# Programos informacija
+## Requirements:
+Python 3.5.2+
+PyQt5 (Can be installed with pip install pyqt5)
