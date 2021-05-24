@@ -16,6 +16,9 @@
 * Mygtukas galintis nukopijuoti slaptažodį į iškarpinę. (2 taškai) 
 
 # Programos informacija
+## Run
+python3 -m program
+
 ## Requirements:
 Python 3.5.2+
 
