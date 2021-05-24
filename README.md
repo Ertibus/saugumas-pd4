@@ -16,8 +16,14 @@
 * Mygtukas galintis nukopijuoti slaptažodį į iškarpinę. (2 taškai) 
 
 # Programos informacija
+## Run
+python3 -m program
+
 ## Requirements:
 Python 3.5.2+
+
 PyQt5 (Can be installed with pip install pyqt5)
+
 pyCrypto (Can be installed with pip install pycrypto)
+
 Pyperclip (Can be installed with pip install pyperclip)
