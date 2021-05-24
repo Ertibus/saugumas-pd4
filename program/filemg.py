@@ -13,6 +13,8 @@ class FileMG:
 
     @classmethod
     def any_user(cls):
+        if not os.path.isdir(cls.DIR):
+            os.mkdir(cls.DIR)
         return len(os.listdir(cls.DIR)) == 0
 
     @classmethod
@@ -126,7 +128,7 @@ class FileMG:
 
     @classmethod
     def encrypt_file(cls):
-        if cls.user.isspace() or cls.key.isspace():
+        if cls.user.isspace() or cls.key.isspace() or not cls.user or not cls.key:
             return
         cryptor = AES(cls.key)
         f_data = ""
