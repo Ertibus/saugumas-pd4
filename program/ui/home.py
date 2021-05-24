@@ -4,7 +4,10 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5.Qt import QRect
 
+import os
+
 from program.utils import Utilities
+from program.filemg import FileMG
 
 class Popup(QWidget):
     def __init__(self, btn_name:str, btn_func):
@@ -16,6 +19,15 @@ class Popup(QWidget):
         self.initUI()
     
     def initUI(self):
+        def __button_press():
+            self.btn_func(login_inp.text(), pass_inp.text(), url_inp.text(), desc_inp.text())
+            self.close()
+
+        def __generate_password():
+            gen_pass = os.urandom(8).hex()
+            
+            pass_inp.setText(gen_pass)
+
         layout = QGridLayout()
         self.setLayout(layout)
 
@@ -37,10 +49,16 @@ class Popup(QWidget):
         pass_lbl.setAlignment(Qt.AlignRight)
         layout.addWidget(pass_lbl, 3, 1)
 
+        pass_lay = QHBoxLayout()
+        layout.addLayout(pass_lay, 3, 2)
+
         pass_inp = QLineEdit()
-        pass_inp.setEchoMode(QLineEdit.Password)
         pass_inp.setPlaceholderText("password123")
-        layout.addWidget(pass_inp, 3, 2)
+        pass_lay.addWidget(pass_inp)
+
+        gener_btn = QPushButton("gen")
+        gener_btn.clicked.connect(__generate_password)
+        pass_lay.addWidget(gener_btn)
 
         url_lbl = QLabel("URL/Application:")
         url_lbl.setAlignment(Qt.AlignRight)
@@ -62,7 +80,7 @@ class Popup(QWidget):
         layout.addWidget(sep_lbl, 6, 1)
 
         create_btn = QPushButton(self.btn_name)
-        create_btn.clicked.connect(self.btn_func)
+        create_btn.clicked.connect(__button_press)
         layout.addWidget(create_btn, 7, 1, 1, 3)
 
 class Home():
@@ -73,26 +91,37 @@ class Home():
         self.listener = listener
 
     def new_password(self):
-        def _create():
-            pass
+        def _create(login:str, password:str, appurl:str, desc:str):
+            try:
+                FileMG.new_password(login, password, appurl, desc)
+            except Exception as err:
+                print(err)
+            else:
+                Utilities.clear_layout(self.screen_lay)
+                self.find_password()
 
         self.popup = Popup("Create", _create)
         self.popup.show()
 
     def upd_password(self):
-        def _update():
-            pass
+        def _update(login:str, password:str, appurl:str, desc:str):
+            FileMG.update_password(login, password, appurl, desc)
+            Utilities.clear_layout(self.screen_lay)
+            self.find_password()
         self.popup = Popup("Update", _update)
         self.popup.show()
 
     def find_password(self):
         def _search():
-            pass
+            self.entry_arr = FileMG.get_search_results(login_inp.text())
+            _draw_list()
 
         def _next():
             self.entry_id += 1
-            if len(self.entry_arr) < self.entry_id - 1:
-                self.entry_id = len(self.entry_arr) - 1
+            if len(self.entry_arr) < self.entry_id * 10 - 1:
+                self.entry_id = len(self.entry_arr) - 11
+                if self.entry_id < 0:
+                    self.entry_id = 0
             _draw_list()
 
         def _prev():
@@ -102,6 +131,12 @@ class Home():
             _draw_list()
 
         def _draw_list():
+            def _show_pass(entry, en_pass):
+                entry.setText(FileMG.show_password(en_pass))
+
+            def _copy_pass(passwo):
+                Utilities.copy_clip(FileMG.show_password(passwo))
+
             Utilities.clear_layout(entry_layout)
 
             login_lbl = QLabel("Login name:")
@@ -120,45 +155,45 @@ class Home():
             desc_lbl.setAlignment(Qt.AlignCenter)
             entry_layout.addWidget(desc_lbl, 0, 5)
 
-            for i in range(0, 10):
-                if i + self.entry_id >= len(self.entry_arr):
+            for i in range(1, 11):
+                if i - 1 + self.entry_id >= len(self.entry_arr):
                     break;
-                login_inp = QLineEdit()
+                curr_entry = self.entry_arr[i - 1 + self.entry_id]
+                if curr_entry[0].isspace() or not curr_entry[0]:
+                    continue
+
+                login_inp = QLineEdit(curr_entry[0])
                 login_inp.setReadOnly(True)
-                login_inp.setPlaceholderText("example@login.io")
                 entry_layout.addWidget(login_inp, i, 0)
 
-                pass_inp = QLineEdit()
+                pass_inp = QLineEdit(curr_entry[1])
                 pass_inp.setReadOnly(True)
-                pass_inp.setPlaceholderText("password123")
                 entry_layout.addWidget(pass_inp, i, 1)
 
                 show_btn = QPushButton("*")
-                show_btn.clicked.connect(_search)
+                show_btn.clicked.connect(lambda state, entry=pass_inp, password=curr_entry[1]: _show_pass(entry, password))
                 entry_layout.addWidget(show_btn, i, 2)
 
                 copy_btn = QPushButton("Copy")
-                copy_btn.clicked.connect(_search)
+                copy_btn.clicked.connect(lambda state, password=curr_entry[1]: _copy_pass(password))
                 entry_layout.addWidget(copy_btn, i, 3)
 
-                url_inp = QLineEdit()
+                url_inp = QLineEdit(curr_entry[2])
                 url_inp.setReadOnly(True)
-                url_inp.setPlaceholderText("www.facebook.com")
                 entry_layout.addWidget(url_inp, i, 4)
 
-                desc_inp = QLineEdit()
+                desc_inp = QLineEdit(curr_entry[3])
                 desc_inp.setReadOnly(True)
-                desc_inp.setPlaceholderText("Social Media")
                 entry_layout.addWidget(desc_inp, i, 5)
 
+
         self.entry_id = 0
-        self.entry_arr = []
+        self.entry_arr = FileMG.get_all_passwords()
 
         layout = QGridLayout()
         self.screen_lay.addLayout(layout)
 
-        layout.setRowStretch(1, 1)
-        layout.setRowStretch(99, 1)
+        layout.setRowStretch(5, 1)
 
         layout.setColumnStretch(2, 1)
 
@@ -174,15 +209,16 @@ class Home():
         login_inp.setPlaceholderText("example@login.io")
         layout.addWidget(login_inp, 2, 2,)
 
-        create_btn = QPushButton("Search")
-        create_btn.clicked.connect(_search)
-        layout.addWidget(create_btn, 2, 3,)
+        search_btn = QPushButton("Search")
+        search_btn.clicked.connect(_search)
+        layout.addWidget(search_btn, 2, 3,)
 
         sep_lbl = QLabel(" ")
         layout.addWidget(sep_lbl, 3, 1)
 
 
         entry_layout = QGridLayout()
+        entry_layout.setColumnStretch(1, 1)
         entry_layout.setColumnStretch(5, 1)
 
         entry_group = QGroupBox("Password list:")
@@ -192,7 +228,7 @@ class Home():
         _draw_list()
 
         page_btn_lay = QHBoxLayout()
-        layout.addLayout(page_btn_lay, 5, 1, 1, 3)
+        layout.addLayout(page_btn_lay, 6, 1, 1, 3)
 
         page_btn_lay.addStretch()
 
@@ -207,7 +243,11 @@ class Home():
 
     def del_password(self):
         def _delete():
-            pass
+            FileMG.delete_password(login_inp.text())
+            self.window.close()
+            Utilities.clear_layout(self.screen_lay)
+            self.find_password()
+
         layout = QGridLayout()
 
         layout.setRowStretch(1, 1)
@@ -223,15 +263,6 @@ class Home():
         login_inp = QLineEdit()
         login_inp.setPlaceholderText("example@login.io")
         layout.addWidget(login_inp, 2, 2)
-
-        pass_lbl = QLabel("Password:")
-        pass_lbl.setAlignment(Qt.AlignRight)
-        layout.addWidget(pass_lbl, 3, 1)
-
-        pass_inp = QLineEdit()
-        pass_inp.setEchoMode(QLineEdit.Password)
-        pass_inp.setPlaceholderText("password123")
-        layout.addWidget(pass_inp, 3, 2)
 
         sep_lbl = QLabel(" ")
         layout.addWidget(sep_lbl, 6, 1)

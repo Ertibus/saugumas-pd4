@@ -1,3 +1,5 @@
+import pyperclip
+
 class Utilities:
     @classmethod
     def clear_layout(cls, layout):
@@ -7,3 +9,7 @@ class Utilities:
                 child.widget().deleteLater()
             elif child.layout() is not None:
                 cls.clear_layout(child.layout())
+
+    @classmethod
+    def copy_clip(cls, password:str):
+        pyperclip.copy(password)

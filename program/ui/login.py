@@ -2,15 +2,23 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import *
 
 from program.utils import Utilities
+from program.filemg import FileMG
 
 class Login():
-    def __init__(self, root, listener):
+    def __init__(self, root, listener, new_user):
         self.root = root
-        self.initUI()
         self.listener = listener
+        self.new_user = new_user
+        self.initUI()
 
     def press_login(self, user:str, password:str):
-        self.listener(0)
+        try:
+            FileMG.login_user(user, password) 
+        except Exception as err:
+            QMessageBox.critical(None, "Error", str(err))
+            print(err)
+        else:
+            self.listener(0)
     
     #0   1              2 
     #    +-------------+
@@ -27,6 +35,14 @@ class Login():
     #10
     def press_register(self):
         def _submit():
+            try:
+                password = password_ent.text()
+                if password != cpassword_ent.text():
+                    raise ValueError("Passwords Don't Match")
+                FileMG.register_user(user_ent.text(), password) 
+            except Exception as err:
+                print(err)
+                QMessageBox.critical(None, "Error", str(err))
             Utilities.clear_layout(self.root)
             self.initUI()
             
@@ -55,9 +71,9 @@ class Login():
 
         password_lbl = QLabel("Confirm Password:")
         main_layout.addWidget(password_lbl, 5, 1)
-        password_ent = QLineEdit()
-        password_ent.setEchoMode(QLineEdit.Password)
-        main_layout.addWidget(password_ent, 6, 1)
+        cpassword_ent = QLineEdit()
+        cpassword_ent.setEchoMode(QLineEdit.Password)
+        main_layout.addWidget(cpassword_ent, 6, 1)
 
         break_lbl = QLabel("    ")
         main_layout.addWidget(break_lbl, 7, 1)
@@ -83,13 +99,17 @@ class Login():
     #    +-------------+
     #8
     def initUI(self):
-
         def _login():
             self.press_login(user_ent.text(), password_ent.text())
 
         def _register():
             Utilities.clear_layout(self.root)
             self.press_register()
+
+        if self.new_user == True:
+            self.new_user = False
+            _register()
+            return
 
         main_layout = QGridLayout()
         self.root.addLayout(main_layout)
