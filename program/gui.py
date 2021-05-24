@@ -11,9 +11,6 @@ class PyQtGUI(QWidget):
         self.initUI()
 
     def closeEvent(self, event):
-        FileMG.encrypt_file()
-        event.accept()
-        return
         try:
             FileMG.encrypt_file()
         except Exception as err:
