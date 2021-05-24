@@ -18,6 +18,9 @@
 # Programos informacija
 ## Requirements:
 Python 3.5.2+
+
 PyQt5 (Can be installed with pip install pyqt5)
+
 pyCrypto (Can be installed with pip install pycrypto)
+
 Pyperclip (Can be installed with pip install pyperclip)
